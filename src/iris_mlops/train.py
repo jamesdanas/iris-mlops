@@ -8,6 +8,8 @@ WHY THIS MODULE EXISTS:
 """
 
 import logging
+import mlflow
+import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from iris_mlops.data import load_data, split
@@ -16,39 +18,37 @@ logger = logging.getLogger(__name__)
 
 
 def train(seed: int = 42, C: float = 1.0, max_iter: int = 200) -> float:
-    """
-    Train a logistic regression model on iris and return accuracy.
+    # WHY set_experiment:
+    #   MLflow groups runs by experiment. All runs from this project
+    #   appear under "iris-classification" in the UI.
+    mlflow.set_experiment("iris-classification")
 
-    PARAMETERS:
-        seed: random seed for reproducibility
-        C: inverse regularization strength (smaller = stronger reg)
-        max_iter: max iterations for the solver to converge
+    # WHY with mlflow.start_run():
+    #   Everything inside this block is attached to ONE run record.
+    #   When the block exits, the run i finalized.
+    with mlflow.start_run():
+        # Log parameters - the INPUTS to training.
+        # WHY: so we can query "which C gave the best accuracy?"
+        mlflow.log_param("seed", seed)
+        mlflow.log_param("C", C) 
+        mlflow.log_param("max_iter", max_iter)
 
-    RETURNS:
-        Accuracy on the held-out test set (float between 0 and 1).
+        X, y = load_data()
+        X_train, X_test, y_train, y_test = split(X, y, seed=seed)
 
-    WHY LOGISTIC REGRESSION:
-        It is fast, interpretable, and adequate for a linearly separable
-        dataset like Iris. In Phase 7, we could swap it for a larger model.
-    """
-    # Step 1: Load and split
-    X, y = load_data()
-    X_train, X_test, y_train, y_test = split(X, y, seed=seed)
+        model = LogisticRegression(C=C, max_iter=max_iter, random_state=seed)
+        model.fit(X_train, y_train)
 
-    # Step 2: Create the model
-    model = LogisticRegression(C=C, max_iter=max_iter, random_state=seed)
+        acc = accuracy_score(y_test, model.predict(X_test))
 
-    # Step 3: Fit the model
-    model.fit(X_train, y_train)
+        # Log metric - the OUTPUT of training.
+        # WHY: metrics are queryable; you can sort and compare runs.
+        mlflow.log_metric("accuracy", acc)
 
-    # Step 4: Evaluate on the held-out test set
-    predictions = model.predict(X_test)
-    acc = accuracy_score(y_test, predictions)
+        # Log the model artifact.
+        # WHY: storing the model means we can load it later
+        #   register it, and promote it.
+        mlflow.sklearn.log_model(model, name="model")
 
-    # Step 5: Log the result
-    logger.info("accuracy=%.4f", acc)
-
-    return acc
-
-
-
+        logger.info("accuracy=%.4f", acc)
+        return acc
