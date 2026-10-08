@@ -1,0 +1,44 @@
+# WHY this file exists:
+#   Defines an automated pipeline that GitHub runs on every push and PR.
+#   No more "did you remember to run tests?" — CI runs them for you.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    # WHY ubuntu-latest:
+    #   Clean, reproducible environment. Same OS every time.
+    runs-on: ubuntu-latest
+
+    steps:
+      # WHY actions/checkout:
+      #   Without this, the runner has no code. This clones the repo.
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # WHY ruff:
+      #   Catches unused imports, undefined names, style violations.
+      #   Cheap to run, catches real bugs before tests even start.
+      - name: Lint
+        run: ruff check .
+
+      - name: Run unit tests
+        run: PYTHONPATH=src pytest tests/ -v
+
+      - name: Build Docker image
+        run: docker build -f Dockerfile.api -t iris-api:${{ github.sha }} .

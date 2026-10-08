@@ -1,9 +1,10 @@
-import logging  
+import logging
 from pathlib import Path
-from omegaconf import DictConfig, OmegaConf
-import hydra
-from iris_mlops.train import train
 
+import hydra
+from omegaconf import DictConfig, OmegaConf
+
+from iris_mlops.train import train
 
 # Compute the absolute path to the conf/ directory from this file's location.
 # This works no matter where the command is run from.

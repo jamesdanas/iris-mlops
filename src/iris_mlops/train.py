@@ -8,10 +8,12 @@ WHY THIS MODULE EXISTS:
 """
 
 import logging
+
 import mlflow
 import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+
 from iris_mlops.data import load_data, split
 
 logger = logging.getLogger(__name__)

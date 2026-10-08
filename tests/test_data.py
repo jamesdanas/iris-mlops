@@ -6,6 +6,7 @@ WHY TESTS:
 """
 
 import numpy as np
+
 from iris_mlops.data import load_data, split
 
 

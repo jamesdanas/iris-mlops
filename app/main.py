@@ -7,14 +7,15 @@ WHY THIS MODULE EXISTS:
     any client — a web app, a mobile app, another service — can call it.
 """
 
-from fastapi import FastAPI, HTTPException, Response, status
-from fastapi.responses import JSONResponse
 import json
 from pathlib import Path
+
 import joblib
 import numpy as np
-from app.schemas import PredictionRequest, PredictionResponse
+from fastapi import FastAPI, HTTPException, Response, status
+from fastapi.responses import JSONResponse
 
+from app.schemas import PredictionRequest, PredictionResponse
 
 
 class PrettyJSONResponse(JSONResponse):
