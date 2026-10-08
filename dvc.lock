@@ -1,0 +1,44 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -c "from iris_mlops.data import load_data, save_processed; from 
+      pathlib import Path; X, y = load_data(); save_processed(X, y, 
+      Path('data/processed.csv'))"
+    deps:
+    - path: src/iris_mlops/data.py
+      hash: md5
+      md5: f285f8c4eb8aee95c9265d27fd08327f
+      size: 2750
+    outs:
+    - path: data/processed.csv
+      hash: md5
+      md5: d9a299aaee302a55149783df769bd617
+      size: 2719
+  train:
+    cmd: python -m iris_mlops.cli
+    deps:
+    - path: data/processed.csv
+      hash: md5
+      md5: d9a299aaee302a55149783df769bd617
+      size: 2719
+    - path: src/iris_mlops/cli.py
+      hash: md5
+      md5: ff22bb6fd52840237bd0db52613bd36c
+      size: 921
+    - path: src/iris_mlops/train.py
+      hash: md5
+      md5: d6d83731e26b85ec620caa3c660452b5
+      size: 2422
+    params:
+      params.yaml:
+        model.C: 1.0
+        seed: 42
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 1237c12e31abbfa07946d0f56f0931cb
+      size: 62
+    - path: models/model.joblib
+      hash: md5
+      md5: e03d684899ea90f14f0328b3747e6d90
+      size: 991

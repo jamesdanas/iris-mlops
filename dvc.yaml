@@ -1,0 +1,22 @@
+stages:
+  prepare:
+    cmd: python -c "from iris_mlops.data import load_data, save_processed; from pathlib import Path; X, y = load_data(); save_processed(X, y, Path('data/processed.csv'))"
+    deps:
+      - src/iris_mlops/data.py
+    outs:
+      - data/processed.csv
+
+  train:
+    cmd: python -m iris_mlops.cli
+    deps:
+      - data/processed.csv
+      - src/iris_mlops/train.py
+      - src/iris_mlops/cli.py
+    params:
+      - seed
+      - model.C
+    outs:
+      - models/model.joblib
+    metrics:
+      - metrics.json:
+          cache: false

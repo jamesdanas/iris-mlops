@@ -1,0 +1,4 @@
+seed: 42
+model:
+  C: 1.0
+  max_iter: 200
