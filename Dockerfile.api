@@ -1,0 +1,35 @@
+# WHY a separate Dockerfile for the API:
+#   The training container (Dockerfile) runs a CLI that trains models.
+#   The serving container (Dockerfile.api) runs a long-lived web server.
+#   Different entrypoints, different dependencies in a production setup.
+#   For now they share requirements.txt, but they are conceptually distinct.
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Dependencies first — cache-friendly
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Application code — only the API and the shared package
+COPY app/ ./app/
+COPY src/ ./src/
+
+# WHY PYTHONPATH points to both:
+#   app/ contains the FastAPI service (main.py, schemas.py)
+#   src/ contains the shared iris_mlops package the API imports
+ENV PYTHONPATH=/app:/app/src
+
+# WHY PYTHONUNBUFFERED:
+#   Without this, uvicorn logs do not appear until the process exits,
+#   making debugging during a crash effectively impossible.
+ENV PYTHONUNBUFFERED=1
+
+# Document the port. Does not publish it — use `-p 8000:8000` at runtime.
+EXPOSE 8000
+
+# WHY --host 0.0.0.0:
+#   Without this, uvicorn binds to localhost *inside* the container,
+#   making it unreachable from outside.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
