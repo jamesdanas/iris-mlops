@@ -10,9 +10,10 @@ WHY PREFECT:
       - Scheduling
 """
 
-from prefect import flow, task
 import logging
+
 import pandas as pd
+from prefect import flow, task
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -73,7 +74,7 @@ def training_pipeline(
         Flows compose tasks. Each task is a unit of work with its own
         retry policy and state. The flow orchestrates them.
     """
-    validated = validate_data(data_path)
+    validate_data(data_path)
     accuracy = train_model(seed=seed, C=C)
     evaluate_gate(accuracy)
     logger.info("Pipeline complete. Accuracy=%.4f", accuracy)

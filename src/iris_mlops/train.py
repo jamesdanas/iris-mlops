@@ -7,10 +7,11 @@ WHY THIS MODULE EXISTS:
     directly without going through the CLI.
 """
 
-import joblib
 import json
 import logging
 from pathlib import Path
+
+import joblib
 import mlflow
 import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
