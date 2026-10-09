@@ -14,7 +14,7 @@ def test_load_data_shapes():
     """The Iris dataset must always be 150 samples x 4 features."""
     X, y = load_data()
     assert X.shape == (150, 4), f"Expected (150, 4), got {X.shape}"
-    assert y.shape == (150, ), f"Expected (150,), got {y.shape}"
+    assert y.shape == (150,), f"Expected (150,), got {y.shape}"
 
 
 def test_load_data_classes():
@@ -26,7 +26,7 @@ def test_load_data_classes():
 def test_split_deterministic():
     """
     WHY: Two calls with the same seed must produce identical splits.
-    Without this, results are non-reproducible. 
+    Without this, results are non-reproducible.
     """
     X, y = load_data()
     a = split(X, y, seed=42)
@@ -48,6 +48,7 @@ def test_split_sizes():
     X_train, X_test, _, _ = split(X, y, test_size=0.2)
     assert len(X_train) == 120
     assert len(X_test) == 30
+
 
 def test_split_stratification():
     """Proves that stratified splitting preserves the exact class distributions.

@@ -35,7 +35,7 @@ def train(seed: int = 42, C: float = 1.0, max_iter: int = 200) -> float:
         # Log parameters - the INPUTS to training.
         # WHY: so we can query "which C gave the best accuracy?"
         mlflow.log_param("seed", seed)
-        mlflow.log_param("C", C) 
+        mlflow.log_param("C", C)
         mlflow.log_param("max_iter", max_iter)
 
         X, y = load_data()
@@ -44,21 +44,19 @@ def train(seed: int = 42, C: float = 1.0, max_iter: int = 200) -> float:
         model = LogisticRegression(C=C, max_iter=max_iter, random_state=seed)
         model.fit(X_train, y_train)
 
-
         acc = accuracy_score(y_test, model.predict(X_test))
 
         Path("models").mkdir(exist_ok=True)
         joblib.dump(model, "models/model.joblib")
 
         # Write metrics to a JSON file so DVC can track it as an artifact.
-        # WHY: DVC reads this file to show "dvc metrics show" output and 
-        #  "dvc metrics diff" between commits. It is the ML-native way 
+        # WHY: DVC reads this file to show "dvc metrics show" output and
+        #  "dvc metrics diff" between commits. It is the ML-native way
         #  to version model quality alongide code and data.
         Path("metrics.json").write_text(
             json.dumps({"accuracy": acc, "seed": seed, "C": C}, indent=2)
         )
 
-   
         # Log metric - the OUTPUT of training.
         # WHY: metrics are queryable; you can sort and compare runs.
         mlflow.log_metric("accuracy", acc)

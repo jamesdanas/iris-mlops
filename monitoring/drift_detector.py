@@ -17,7 +17,7 @@ WHY THE 0.7.x API:
 """
 
 import pandas as pd
-from evidently import Report, Dataset
+from evidently import Dataset, Report
 from evidently.presets import DataDriftPreset
 
 

@@ -17,11 +17,11 @@ from sklearn.model_selection import train_test_split
 def load_data() -> tuple[np.ndarray, np.ndarray]:
     """
     Load the Iris dataset as (X, y).
-    
+
     RETURNS:
         X: numpy array of shape (150, 4) - 150 samples, 4 features
         y: numpy array of shape (150,) - class labels 0, 1, 2
-    
+
     WHY sklearn.datasets:
         It ships with the library, so no network call is needed.
         In production, this function would read from a database or S3.
@@ -35,14 +35,11 @@ def load_data() -> tuple[np.ndarray, np.ndarray]:
 
 
 def split(
-        X: np.ndarray,
-        y: np.ndarray,
-        test_size: float = 0.2,
-        seed: int = 42
+    X: np.ndarray, y: np.ndarray, test_size: float = 0.2, seed: int = 42
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """"
+    """ "
     Split data into train and test sets.
-    
+
     WHY random_state=seed:
         Without it, every run produces a different split, making results
         non-reproducible. Fixing the seed means the same command always
@@ -54,6 +51,7 @@ def split(
     """
     # stratify=y guarantees identical class proportions between train and test sets
     return train_test_split(X, y, test_size=test_size, random_state=seed, stratify=y)
+
 
 def save_processed(X: np.ndarray, y: np.ndarray, path: Path) -> None:
     """
@@ -85,4 +83,3 @@ def save_processed(X: np.ndarray, y: np.ndarray, path: Path) -> None:
 
     # index=False: don't write the pandas row numbers as a column
     df.to_csv(path, index=False)
-     

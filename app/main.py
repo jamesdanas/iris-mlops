@@ -20,6 +20,7 @@ from app.schemas import PredictionRequest, PredictionResponse
 
 class PrettyJSONResponse(JSONResponse):
     """JSONResponse that pretty-prints with indentation and spaces."""
+
     def render(self, content) -> bytes:
         return json.dumps(
             content,
@@ -28,6 +29,7 @@ class PrettyJSONResponse(JSONResponse):
             indent=2,
             separators=(", ", ": "),
         ).encode("utf-8")
+
 
 app = FastAPI(
     title="Iris Prediction API",

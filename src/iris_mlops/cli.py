@@ -14,8 +14,7 @@ CONFIG_PATH = str(Path(__file__).resolve().parents[2] / "conf")
 @hydra.main(version_base=None, config_path=CONFIG_PATH, config_name="config")
 def main(cfg: DictConfig) -> None:
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
     )
 
     # WHY print the config:
@@ -23,11 +22,7 @@ def main(cfg: DictConfig) -> None:
     #   you see what actually ran.
     print(OmegaConf.to_yaml(cfg))
 
-    acc = train(
-        seed=cfg.seed,
-        C=cfg.model.C,
-        max_iter=cfg.model.max_iter
-    )
+    acc = train(seed=cfg.seed, C=cfg.model.C, max_iter=cfg.model.max_iter)
     print(f"Final accuracy: {acc:4f}")
 
 

@@ -45,3 +45,7 @@ multirun/
 # ─── Models and logs ───
 models/
 logs/
+
+# Generated artifacts
+reports/
+data/production_recent.csv

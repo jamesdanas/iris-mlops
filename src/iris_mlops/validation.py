@@ -18,10 +18,12 @@ from pandera.pandas import Check, Column, DataFrameSchema
 #   multiple checks as separate positional arguments makes Pandera treat
 #   the second one as `nullable`, which fails silently at schema definition
 #   time and blows up at validation time.
-iris_schema = DataFrameSchema({
-    "f0": Column(float, [Check.gt(0), Check.lt(10)], name="sepal_length"),
-    "f1": Column(float, [Check.gt(0), Check.lt(10)], name="sepal_width"),
-    "f2": Column(float, [Check.gt(0), Check.lt(10)], name="petal_length"),
-    "f3": Column(float, [Check.gt(0), Check.lt(10)], name="petal_width"),
-    "target": Column(int, Check.isin([0, 1, 2])),
-})
+iris_schema = DataFrameSchema(
+    {
+        "f0": Column(float, [Check.gt(0), Check.lt(10)], name="sepal_length"),
+        "f1": Column(float, [Check.gt(0), Check.lt(10)], name="sepal_width"),
+        "f2": Column(float, [Check.gt(0), Check.lt(10)], name="petal_length"),
+        "f3": Column(float, [Check.gt(0), Check.lt(10)], name="petal_width"),
+        "target": Column(int, Check.isin([0, 1, 2])),
+    }
+)

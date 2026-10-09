@@ -13,12 +13,9 @@ from sklearn.metrics import accuracy_score
 
 logger = logging.getLogger(__name__)
 
+
 def evaluate_gate(
-        candidate_model,
-        champion_model,
-        X_test,
-        y_test,
-        min_improvement: float = 0.01
+    candidate_model, champion_model, X_test, y_test, min_improvement: float = 0.01
 ) -> bool:
     """
     Compare candidate and champion on the same test set.
@@ -33,7 +30,10 @@ def evaluate_gate(
 
     logger.info(
         "candidate=%.4f champion=%.4f improvement=%.4f threshold=%.4f",
-        candidate_acc, champion_acc, improvement, min_improvement
+        candidate_acc,
+        champion_acc,
+        improvement,
+        min_improvement,
     )
 
     if improvement < min_improvement:

@@ -10,7 +10,6 @@ WHY PYDANTIC:
     Your prediction code only ever sees VALID data.
 """
 
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -20,11 +19,9 @@ class PredictionRequest(BaseModel):
     #   `model_config` attribute. The old pattern still works but is
     #   deprecated and triggers ruff's RUF012 warning.
     model_config = ConfigDict(
-        json_schema_extra={
-            "example": {"features": [5.1, 3.5, 1.4, 0.2]}
-        },
+        json_schema_extra={"example": {"features": [5.1, 3.5, 1.4, 0.2]}},
     )
-    
+
     # WHY Field(...) with constraints:
     #  `...` means required. min_length/max_length enforce exactly 4.
     #  Without these, a request with 3 or 5 features would reach the model
