@@ -21,8 +21,13 @@ dependencies = [
     "evidently",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = ["iris_mlops", "monitoring", "flows"]
+
+[tool.setuptools.package-dir]
+iris_mlops = "src/iris_mlops"
+monitoring = "monitoring"
+flows = "flows"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
