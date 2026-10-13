@@ -1,4 +1,7 @@
 [core]
-    remote = local
+    remote = minio
 ['remote "local"']
     url = /tmp/dvcstore
+['remote "minio"']
+    url = s3://iris-mlops-data/dvc
+    endpointurl = http://localhost:9000

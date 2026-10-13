@@ -7,18 +7,45 @@ name = "iris-mlops"
 version = "0.1.0"
 description = "A production-minded MLOps reference implementation"
 requires-python = ">=3.11"
+
+# Runtime dependencies — what the code imports to run.
+# These ship with the serving container and are installed in production.
 dependencies = [
+    # Core ML
     "numpy",
+    "pandas",
     "scikit-learn",
+    "joblib",
+    # Experiment tracking
     "mlflow",
-    "dvc",
+    # Configuration
     "hydra-core",
+    # Validation
+    "pandera",
+    # Serving
     "fastapi",
     "uvicorn[standard]",
     "pydantic",
-    "pandera",
+]
+
+# Dev dependencies — tools used to develop, test, orchestrate, and monitor.
+# These are NOT installed in the serving container.
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest",
+    # Linting and formatting
     "ruff",
+    "pre-commit",
+    # Orchestration
+    "prefect",
+    # Data versioning
+    "dvc",
+    "dvc-s3",
+    # Monitoring
     "evidently",
+    # Plotting for reports
+    "matplotlib",
 ]
 
 [tool.setuptools]
@@ -26,8 +53,6 @@ packages = ["iris_mlops", "monitoring", "flows"]
 
 [tool.setuptools.package-dir]
 iris_mlops = "src/iris_mlops"
-monitoring = "monitoring"
-flows = "flows"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
