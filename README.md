@@ -234,6 +234,20 @@ The DVC remote is configured to `s3://iris-mlops-data/dvc`. DVC stores its crede
 
 A Kind cluster named `iris-mlops` provides a real Kubernetes environment on your laptop. The API image is loaded via `kind load docker-image`.
 
+### Autoscaling
+
+The HPA scales the API between 1 and 5 replicas based on CPU. Metrics come from the metrics-server.
+
+```bash
+# Install metrics-server (Kind-specific patch for TLS)
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl patch deployment metrics-server -n kube-system --type=json \
+  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+
+# Apply the HPA
+kubectl apply -f k8s/hpa.yaml
+kubectl get hpa
+```
 ---
 
 ## Phase Progress

@@ -1,0 +1,24 @@
+# WHY a Service:
+#   Pods come and go — they are restarted, rescheduled, and scaled.
+#   A Service provides a stable virtual IP that always points to the
+#   current set of Pods matching its selector.
+apiVersion: v1
+kind: Service
+metadata:
+  name: iris-api
+  labels:
+    app: iris-api
+spec:
+  selector:
+    app: iris-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+
+  # WHY NodePort:
+  #   ClusterIP is internal-only. LoadBalancer needs a cloud provider
+  #   with an ingress controller (AWS ELB, GCP LB). NodePort exposes
+  #   the service on every node's IP at a high port — works in Kind
+  #   for local development, and is what we will port-forward to.
+  type: NodePort

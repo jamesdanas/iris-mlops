@@ -1,0 +1,87 @@
+# WHY a Deployment (not a bare Pod):
+#   A Deployment manages a set of identical Pods. It handles rolling
+#   updates, restarts failed Pods, and lets you scale replicas.
+#   You almost never create bare Pods in production.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iris-api
+  labels:
+    app: iris-api
+spec:
+  replicas: 2
+
+  # WHY a selector:
+  #   The Deployment finds its Pods by label. The selector must match
+  #   `template.metadata.labels` below, or the Deployment has no Pods.
+  selector:
+    matchLabels:
+      app: iris-api
+
+  template:
+    metadata:
+      labels:
+        app: iris-api
+    spec:
+      containers:
+        - name: api
+
+          # WHY a pinned tag, not :latest:
+          #   :latest is ambiguous and cannot be rolled back.
+          image: iris-api:ci-check
+
+          # WHY imagePullPolicy: IfNotPresent:
+          #   The image was loaded via `kind load docker-image`, not
+          #   from a registry. The node already has it.
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8000
+
+          # WHY resource requests and limits:
+          #   Requests are used for scheduling; limits cap usage.
+          #   Without them, one Pod can starve the node.
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          # WHY livenessProbe:
+          #   Kubernetes restarts containers whose liveness probe fails.
+          #   If the process deadlocks or hangs, this catches it.
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+
+          # WHY readinessProbe:
+          #   Kubernetes removes not-ready containers from the load
+          #   balancer without restarting them.
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+
+          # WHY a volume mount:
+          #   The API expects the model at /app/models/model.joblib.
+          #   We mount it from a ConfigMap (small file, fits in etcd).
+          #   In production, mount from a PVC or fetch from MLflow.
+          volumeMounts:
+            - name: model-storage
+              mountPath: /app/models
+              readOnly: true
+
+      volumes:
+        - name: model-storage
+          configMap:
+            name: iris-model
