@@ -15,6 +15,9 @@ import numpy as np
 from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 
+# NEW: Prometheus instrumentation
+from prometheus_client import Counter, Histogram, generate_latest
+
 from app.schemas import PredictionRequest, PredictionResponse
 
 
@@ -36,6 +39,27 @@ app = FastAPI(
     version="1.0.0",
     description="Serves a logistic regression classifier trained on Iris",
     default_response_class=JSONResponse,
+)
+
+# NEW: Prometheus metric definitions.
+# WHY counters and histograms:
+#   Counters only go up — perfect for "how many requests" and "how many
+#   predictions of class 0?" Histograms bucket observations — perfect
+#   for latency, because p50/p95/p99 can be computed from the buckets.
+REQUEST_COUNT = Counter(
+    "model_requests_total",
+    "Total prediction requests",
+    ["endpoint", "status"],
+)
+PREDICTION_DIST = Counter(
+    "model_predictions_total",
+    "Prediction distribution by class",
+    ["predicted_class"],
+)
+LATENCY = Histogram(
+    "model_latency_seconds",
+    "Prediction latency in seconds",
+    buckets=[0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0],
 )
 
 # Module-level variable — the loaded model lives here for the app's lifetime.
@@ -90,6 +114,19 @@ def readiness(response: Response):
     return {"status": "ready"}
 
 
+# NEW: Prometheus scrape endpoint.
+# Prometheus pulls metrics from this URL every 15 seconds by default.
+@app.get("/metrics")
+def metrics():
+    """
+    WHY this endpoint:
+        Prometheus scrapes it every 15 seconds. The output is the
+        current value of every counter and histogram, in Prometheus
+        text exposition format.
+    """
+    return Response(generate_latest(), media_type="text/plain")
+
+
 @app.post("/predict", response_model=PredictionResponse)
 def predict(request: PredictionRequest):
     """
@@ -99,19 +136,25 @@ def predict(request: PredictionRequest):
         FastAPI validates the return value against PredictionResponse.
         If we accidentally returned a string, FastAPI would catch it.
     """
-    # Defensive check — should never fire if startup worked
-    if model is None:
-        raise HTTPException(status_code=503, detail="Model not loaded")
+    # NEW: Wrap the prediction in a latency timer and record counters.
+    with LATENCY.time():
+        # Defensive check — should never fire if startup worked
+        if model is None:
+            raise HTTPException(status_code=503, detail="Model not loaded")
 
-    # Reshape: sklearn expects 2D input for a single sample
-    features = np.array([request.features])
+        # Reshape: sklearn expects 2D input for a single sample
+        features = np.array([request.features])
 
-    # Predict class and probabilities
-    prediction = int(model.predict(features)[0])
-    probabilities = model.predict_proba(features)[0].tolist()
+        # Predict class and probabilities
+        prediction = int(model.predict(features)[0])
+        probabilities = model.predict_proba(features)[0].tolist()
 
-    return PredictionResponse(
-        prediction=prediction,
-        probabilities=probabilities,
-        model_version="v1.0.0",
-    )
+        # NEW: Record the prediction distribution and request count
+        PREDICTION_DIST.labels(predicted_class=str(prediction)).inc()
+        REQUEST_COUNT.labels(endpoint="/predict", status="200").inc()
+
+        return PredictionResponse(
+            prediction=prediction,
+            probabilities=probabilities,
+            model_version="v1.0.0",
+        )

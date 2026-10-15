@@ -12,3 +12,4 @@ joblib
 mlflow
 mlflow-skinny
 pandera
+prometheus-client
